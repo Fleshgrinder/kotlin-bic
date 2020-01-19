@@ -1,0 +1,47 @@
+---
+version: 2.1
+
+jobs:
+  java-8:
+    docker:
+      - image: gradle:5.4.1-jdk8
+    working_directory: ~/project
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1.8-{{ checksum "build.gradle.kts" }}
+            - v1.8
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1.8-{{ checksum "build.gradle.kts" }}
+      - run: gradle check
+  java-11:
+    docker:
+      - image: gradle:5.4.1-jdk11
+    working_directory: ~/project
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1.11-{{ checksum "build.gradle.kts" }}
+            - v1.11
+      - run: gradle dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1.11-{{ checksum "build.gradle.kts" }}
+      - run: gradle check
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - java-8
+      - java-11
+
+# TODO react to master merges and automatically generate docs (push with `[skip ci]`)
+# TODO react to tags and automatically publish
+# TODO react to tags and create GitHub release
